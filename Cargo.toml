@@ -6,10 +6,16 @@ edition = "2021"
 [dependencies]
 axum = "0.8.1"
 dotenv = "0.15.0"
-hyper = { version = "1.6.0", features = ["full"] }
+hyper = { version = "0.14", features = ["full", "server"] }
+async-trait = "0.1"
 postgres = "0.19.10"
 tokio = { version = "1.32.0", features = ["full"] }
-tower = "0.5.2"
-diesel = { version = "2.1.0", features = ["postgres", "r2d2"] }
+tower-http = { version = "0.5", features = ["auth"] }
+diesel = { version = "2.1.0", features = ["postgres", "r2d2", "chrono"] }
 r2d2 = "0.8"
 thiserror = "1.0"
+jsonwebtoken = "8.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4" }
+tokio-postgres = "0.7"

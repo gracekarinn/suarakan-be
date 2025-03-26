@@ -1,0 +1,1 @@
+DROP TABLE perempuan_reports;

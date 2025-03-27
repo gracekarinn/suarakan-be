@@ -1,42 +1,45 @@
-use diesel::{prelude::*, result::Error};
-use crate::{
-    model::report::{Report, NewReport, UpdateReport},
-    database::connection::PgPool,
-    schema::reports::dsl::*,
-};
+use diesel::prelude::*;
+use diesel::PgConnection;
+use crate::model::update::{Update, NewUpdate};
+use crate::schema::updates;
+use chrono::Utc;
 
-pub struct ReportService;
+pub struct StatusService;
 
-impl ReportService {
-    pub fn create_report(new_report: NewReport, pool: &PgPool) -> Result<Report, Error> {
-        let mut conn = pool.get().unwrap();
-        
-        diesel::insert_into(reports)
-            .values(&new_report)
-            .get_result::<Report>(&mut conn)
+impl StatusService {
+    /// Membuat status laporan baru
+    pub fn create_status(
+        conn: &mut PgConnection,
+        data_id: i32,
+        remarks: Option<String>,
+        proof: Option<String>,
+        status: String,
+        admin_id: i32,
+    ) -> Result<Update, diesel::result::Error> {
+        use crate::schema::updates::dsl::*;
+
+        let new_status = NewUpdate {
+            dataid: data_id,
+            createdat: Some(Utc::now().naive_utc()),
+            updatedat: None,
+            remarks,
+            proof,
+            status: Some(status),
+            adminid: Some(admin_id),
+        };
+
+        diesel::insert_into(updates)
+            .values(&new_status)
+            .get_result(conn)
     }
 
-    pub fn get_report(report_id: i32, pool: &PgPool) -> Result<Report, Error> {
-        let mut conn = pool.get().unwrap();
-        reports.find(report_id).first::<Report>(&mut conn)
-    }
+    /// Membaca status laporan berdasarkan ID
+    pub fn get_status_by_id(
+        conn: &mut PgConnection,
+        update_id: i32,
+    ) -> Result<Update, diesel::result::Error> {
+        use crate::schema::updates::dsl::*;
 
-    pub fn update_report(
-        report_id: i32,
-        update_data: UpdateReport,
-        pool: &PgPool
-    ) -> Result<Report, Error> {
-        let mut conn = pool.get().unwrap();
-        
-        diesel::update(reports.find(report_id))
-            .set(&update_data)
-            .get_result::<Report>(&mut conn)
-    }
-
-    pub fn delete_report(report_id: i32, pool: &PgPool) -> Result<usize, Error> {
-        let mut conn = pool.get().unwrap();
-        
-        diesel::delete(reports.find(report_id))
-            .execute(&mut conn)
+        updates.find(update_id).first(conn)
     }
 }

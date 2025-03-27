@@ -8,11 +8,11 @@ use crate::database::connection::DbPool;
 pub fn status_routes(pool: DbPool) -> Router {
     Router::new()
         .route(
-            "/api/v1/status",
+            "/api/v1/status", 
             post(status_controller::create_status)
         )
         .route(
-            "/api/v1/status/{id}",
+            "/api/v1/status/:update_id", 
             get(status_controller::get_status)
         )
         .with_state(pool)

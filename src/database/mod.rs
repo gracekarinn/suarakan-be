@@ -1,3 +1,4 @@
 pub mod connection;
 
-pub use connection::connect_to_db;
+pub use connection::DbPool;
+pub use connection::establish_connection_pool;

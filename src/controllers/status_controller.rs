@@ -1,99 +1,88 @@
-use actix_web::{web, HttpResponse};
-use chrono::Utc;
-use crate::{
-    database::connection::PgPool,
-    model::report::{Report, NewReport, UpdateReport},
-    services::report_service::ReportService
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+    Json,
 };
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use crate::services::status_service::StatusService;
+use crate::database::connection::DbPool;
+use axum::http::Request;
+use crate::middleware::auth::extract_token_from_request;
 
-#[derive(serde::Deserialize)]
-pub struct CreateReportRequest {
-    pub reporterid: i32,
-    pub proofid: Option<i32>,
-    pub incidentid: Option<i32>,
-    pub victimid: Option<i32>,
-    pub accusedid: Option<i32>,
+#[derive(Deserialize)]
+pub struct CreateStatusRequest {
+    pub data_id: i32,
+    pub remarks: Option<String>,
+    pub proof: Option<String>,
+    pub status: String,
 }
 
-#[derive(serde::Deserialize, AsChangeset)]
-#[diesel(table_name = crate::schema::reports)]
-pub struct UpdateReportRequest {
-    pub proofid: Option<i32>,
-    pub incidentid: Option<i32>,
-    pub victimid: Option<i32>,
-    pub accusedid: Option<i32>,
+#[derive(Serialize)]
+pub struct StatusResponse {
+    pub update_id: i32,
+    pub data_id: i32,
+    pub status: Option<String>,
+    pub remarks: Option<String>,
+    pub proof: Option<String>,
 }
 
-// CREATE
-pub async fn create_report(
-    report_data: web::Json<CreateReportRequest>,
-    pool: web::Data<PgPool>,
-) -> HttpResponse {
-    let new_report = NewReport {
-        reporterid: report_data.reporterid,
-        createdat: Some(Utc::now().naive_utc()),
-        updatedat: None,
-        proofid: report_data.proofid,
-        incidentid: report_data.incidentid,
-        victimid: report_data.victimid,
-        accusedid: report_data.accusedid,
+pub async fn create_status(
+    State(pool): State<DbPool>,
+    Json(payload): Json<CreateStatusRequest>,
+    req: Request<axum::body::Body>,
+) -> impl IntoResponse {
+    match extract_token_from_request(&req) {
+        Ok(claims) => {
+            if claims.user_type != "ADMIN" {
+                return (StatusCode::FORBIDDEN, Json(json!({"error": "Admin access required"}))).into_response();
+            }
+
+            let mut conn = match pool.get() {
+                Ok(conn) => conn,
+                Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Database connection error"}))).into_response(),
+            };
+
+            match StatusService::create_status(
+                &mut conn,
+                payload.data_id,
+                payload.remarks,
+                payload.proof,
+                payload.status,
+                claims.user_id, // Menggunakan user_id dari token admin
+            ) {
+                Ok(status) => (StatusCode::CREATED, Json(json!({
+                    "update_id": status.updateid,
+                    "data_id": status.dataid,
+                    "status": status.status,
+                    "remarks": status.remarks,
+                    "proof": status.proof,
+                }))).into_response(),
+                Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Failed to create status"}))).into_response(),
+            }
+        },
+        Err(status) => (status, Json(json!({"error": "Authentication failed"}))).into_response(),
+    }
+}
+
+pub async fn get_status(
+    State(pool): State<DbPool>,
+    Path(update_id): Path<i32>,
+) -> impl IntoResponse {
+    let mut conn = match pool.get() {
+        Ok(conn) => conn,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "Database connection error"}))).into_response(),
     };
 
-    match ReportService::create_report(new_report, &pool) {
-        Ok(created_report) => HttpResponse::Created().json(created_report),
-        Err(e) => HttpResponse::BadRequest().body(e.to_string()),
-    }
-}
-
-// READ
-pub async fn get_report(
-    path: web::Path<i32>,
-    pool: web::Data<PgPool>,
-) -> HttpResponse {
-    let report_id = path.into_inner();
-    
-    match ReportService::get_report(report_id, &pool) {
-        Ok(report) => HttpResponse::Ok().json(report),
-        Err(diesel::result::Error::NotFound) => 
-            HttpResponse::NotFound().body("Report not found"),
-        Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
-    }
-}
-
-// UPDATE
-pub async fn update_report(
-    path: web::Path<i32>,
-    update_data: web::Json<UpdateReportRequest>,
-    pool: web::Data<PgPool>,
-) -> HttpResponse {
-    let report_id = path.into_inner();
-    let update_report = UpdateReport {
-        updatedat: Some(Utc::now().naive_utc()),
-        proofid: update_data.proofid,
-        incidentid: update_data.incidentid,
-        victimid: update_data.victimid,
-        accusedid: update_data.accusedid,
-    };
-
-    match ReportService::update_report(report_id, update_report, &pool) {
-        Ok(updated_report) => HttpResponse::Ok().json(updated_report),
-        Err(diesel::result::Error::NotFound) => 
-            HttpResponse::NotFound().body("Report not found"),
-        Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
-    }
-}
-
-// DELETE
-pub async fn delete_report(
-    path: web::Path<i32>,
-    pool: web::Data<PgPool>,
-) -> HttpResponse {
-    let report_id = path.into_inner();
-    
-    match ReportService::delete_report(report_id, &pool) {
-        Ok(_) => HttpResponse::NoContent().finish(),
-        Err(diesel::result::Error::NotFound) => 
-            HttpResponse::NotFound().body("Report not found"),
-        Err(e) => HttpResponse::InternalServerError().body(e.to_string()),
+    match StatusService::get_status_by_id(&mut conn, update_id) {
+        Ok(status) => (StatusCode::OK, Json(StatusResponse {
+            update_id: status.updateid,
+            data_id: status.dataid,
+            status: status.status,
+            remarks: status.remarks,
+            proof: status.proof,
+        })).into_response(),
+        Err(_) => (StatusCode::NOT_FOUND, Json(json!({"error": "Status not found"}))).into_response(),
     }
 }

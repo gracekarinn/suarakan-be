@@ -31,6 +31,135 @@ diesel::table! {
 }
 
 diesel::table! {
+    auth_group (id) {
+        id -> Int4,
+        #[max_length = 150]
+        name -> Varchar,
+    }
+}
+
+diesel::table! {
+    auth_group_permissions (id) {
+        id -> Int8,
+        group_id -> Int4,
+        permission_id -> Int4,
+    }
+}
+
+diesel::table! {
+    auth_permission (id) {
+        id -> Int4,
+        #[max_length = 255]
+        name -> Varchar,
+        content_type_id -> Int4,
+        #[max_length = 100]
+        codename -> Varchar,
+    }
+}
+
+diesel::table! {
+    authentication_user (id) {
+        id -> Int8,
+        #[max_length = 128]
+        password -> Varchar,
+        last_login -> Nullable<Timestamptz>,
+        is_superuser -> Bool,
+        #[max_length = 150]
+        first_name -> Varchar,
+        #[max_length = 150]
+        last_name -> Varchar,
+        is_staff -> Bool,
+        is_active -> Bool,
+        date_joined -> Timestamptz,
+        #[max_length = 254]
+        email -> Varchar,
+        #[max_length = 10]
+        user_type -> Varchar,
+        is_email_verified -> Bool,
+        #[max_length = 255]
+        full_name -> Varchar,
+        #[max_length = 15]
+        phone_number -> Varchar,
+    }
+}
+
+diesel::table! {
+    authentication_user_groups (id) {
+        id -> Int8,
+        user_id -> Int8,
+        group_id -> Int4,
+    }
+}
+
+diesel::table! {
+    authentication_user_user_permissions (id) {
+        id -> Int8,
+        user_id -> Int8,
+        permission_id -> Int4,
+    }
+}
+
+diesel::table! {
+    authentication_userprofile (id) {
+        id -> Int8,
+        reporter_id -> Uuid,
+        #[max_length = 255]
+        occupation -> Varchar,
+        date_of_birth -> Nullable<Date>,
+        official_address -> Text,
+        #[max_length = 20]
+        fax_number -> Varchar,
+        created_at -> Timestamptz,
+        updated_at -> Timestamptz,
+        user_id -> Int8,
+    }
+}
+
+diesel::table! {
+    django_admin_log (id) {
+        id -> Int4,
+        action_time -> Timestamptz,
+        object_id -> Nullable<Text>,
+        #[max_length = 200]
+        object_repr -> Varchar,
+        action_flag -> Int2,
+        change_message -> Text,
+        content_type_id -> Nullable<Int4>,
+        user_id -> Int8,
+    }
+}
+
+diesel::table! {
+    django_content_type (id) {
+        id -> Int4,
+        #[max_length = 100]
+        app_label -> Varchar,
+        #[max_length = 100]
+        model -> Varchar,
+    }
+}
+
+diesel::table! {
+    django_migrations (id) {
+        id -> Int8,
+        #[max_length = 255]
+        app -> Varchar,
+        #[max_length = 255]
+        name -> Varchar,
+        applied -> Timestamptz,
+    }
+}
+
+diesel::table! {
+    django_session (session_key) {
+        #[max_length = 40]
+        session_key -> Varchar,
+        session_data -> Text,
+        expire_date -> Timestamptz,
+    }
+}
+
+diesel::table! {
     ham_reports (reportid) {
         reportid -> Int4,
         updateid -> Nullable<Int4>,
@@ -177,6 +306,16 @@ diesel::table! {
 }
 
 diesel::joinable!(admins -> users (adminid));
+diesel::joinable!(auth_group_permissions -> auth_group (group_id));
+diesel::joinable!(auth_group_permissions -> auth_permission (permission_id));
+diesel::joinable!(auth_permission -> django_content_type (content_type_id));
+diesel::joinable!(authentication_user_groups -> auth_group (group_id));
+diesel::joinable!(authentication_user_groups -> authentication_user (user_id));
+diesel::joinable!(authentication_user_user_permissions -> auth_permission (permission_id));
+diesel::joinable!(authentication_user_user_permissions -> authentication_user (user_id));
+diesel::joinable!(authentication_userprofile -> authentication_user (user_id));
+diesel::joinable!(django_admin_log -> authentication_user (user_id));
+diesel::joinable!(django_admin_log -> django_content_type (content_type_id));
 diesel::joinable!(ham_reports -> reports (reportid));
 diesel::joinable!(ham_reports -> updates (updateid));
 diesel::joinable!(perempuan_reports -> reports (reportid));
@@ -195,6 +334,17 @@ diesel::joinable!(updates -> admins (adminid));
 diesel::allow_tables_to_appear_in_same_query!(
     accused,
     admins,
+    auth_group,
+    auth_group_permissions,
+    auth_permission,
+    authentication_user,
+    authentication_user_groups,
+    authentication_user_user_permissions,
+    authentication_userprofile,
+    django_admin_log,
+    django_content_type,
+    django_migrations,
+    django_session,
     ham_reports,
     incidents,
     perempuan_reports,

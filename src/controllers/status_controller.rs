@@ -85,12 +85,11 @@ pub async fn create_status(
     headers: HeaderMap,
     Json(payload): Json<CreateStatusRequest>,
 ) -> impl IntoResponse {
-    // Bangun request builder dari header yang ada
     let mut builder = Request::builder();
     for (key, value) in headers.iter() {
         builder = builder.header(key, value);
     }
-    // Ekstrak token menggunakan builder (tanpa mengonsumsi body)
+    
     match extract_token_from_request(&builder.body(()).unwrap()) {
         Ok(claims) => {
             if claims.user_type != "ADMIN" {

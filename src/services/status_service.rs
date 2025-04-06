@@ -66,22 +66,6 @@ impl StatusService {
             .get_result(conn)
     }
 
-    pub fn soft_delete_status(
-        conn: &mut PgConnection,
-        update_id: i32,
-        admin_id: i32,
-    ) -> Result<Update, diesel::result::Error> {
-        use crate::schema::updates::dsl::*;
-
-        diesel::update(updates.find(update_id))
-            .set((
-                updatedat.eq(Some(Utc::now().naive_utc())),
-                status.eq(Some("DELETED".to_string())),
-                adminid.eq(Some(admin_id)),
-            ))
-            .get_result(conn)
-    }
-
     pub fn list_statuses(
         conn: &mut PgConnection,
         page: i64,

@@ -12,6 +12,6 @@ pub fn create_routes(pool: DbPool) -> Router {
         .merge(public::routes())
         .merge(protected::routes())
         .merge(admin::routes())
-        .merge(publication::routes(pool))
+        .merge(publication::routes(pool.clone()))
         .merge(status::routes(pool))
 }

@@ -5,7 +5,7 @@ use axum::{
 use crate::controllers::status_controller;
 use crate::database::connection::DbPool;
 
-pub fn status_routes(pool: DbPool) -> Router {
+pub fn routes(pool: DbPool) -> Router {
     Router::new()
         .route(
             "/api/v1/status", 

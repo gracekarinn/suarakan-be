@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = { version = "0.8.1", features = ["macros"] }
+axum = {version = "0.8.1", features = ["macros"]}
 dotenv = "0.15.0"
 hyper = { version = "0.14", features = ["full", "server"] }
 async-trait = "0.1"
@@ -17,5 +17,5 @@ thiserror = "1.0"
 jsonwebtoken = "8.3"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-chrono = { version = "0.4" }
+chrono = { version = "0.4", features = ["serde"] }
 tokio-postgres = "0.7"

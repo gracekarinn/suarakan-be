@@ -7,5 +7,4 @@ pub mod victim;
 pub mod accused;
 pub mod proof;
 pub mod update;
-pub mod specialized_reports;
 pub mod publication;

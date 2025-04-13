@@ -1,0 +1,3 @@
+ALTER TABLE publications
+    ALTER COLUMN title TYPE VARCHAR(255),
+    ALTER COLUMN filelink TYPE VARCHAR(255);

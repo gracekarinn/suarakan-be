@@ -15,7 +15,7 @@ pub fn routes(pool: DbPool) -> Router {
         )
 
         .route(
-            "/api/v1/publications/:id",
+            "/api/v1/publications/{id}",
             get(get_publication)
                 .put(update_publication)
                 .delete(delete_publication)

@@ -6,6 +6,7 @@ use crate::model::incident::Incident;
 use crate::model::victim::Victim;
 use crate::model::accused::Accused;
 use crate::model::proof::Proof;
+use crate::model::update::Update;
 
 #[derive(Queryable, Selectable, Identifiable, Associations)]
 #[diesel(belongs_to(Reporter, foreign_key = reporterid))]
@@ -13,6 +14,7 @@ use crate::model::proof::Proof;
 #[diesel(belongs_to(Victim, foreign_key = victimid))]
 #[diesel(belongs_to(Accused, foreign_key = accusedid))]
 #[diesel(belongs_to(Proof, foreign_key = proofid))]
+#[diesel(belongs_to(Update, foreign_key = updateid))]
 #[diesel(table_name = reports)]
 #[diesel(primary_key(reportid))]
 pub struct Report {
@@ -24,6 +26,7 @@ pub struct Report {
     pub incidentid: Option<i32>,
     pub victimid: Option<i32>,
     pub accusedid: Option<i32>,
+    pub updateid: Option<i32>,
 }
 
 #[derive(Insertable)]
@@ -36,4 +39,5 @@ pub struct NewReport {
     pub incidentid: Option<i32>,
     pub victimid: Option<i32>,
     pub accusedid: Option<i32>,
+    pub updateid: Option<i32>,
 }

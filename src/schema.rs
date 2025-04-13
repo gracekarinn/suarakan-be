@@ -256,7 +256,7 @@ diesel::table! {
         proof -> Nullable<Varchar>,
         #[max_length = 50]
         status -> Nullable<Varchar>,
-        adminid -> Nullable<Int4>,
+        adminid -> Nullable<Int8>,
     }
 }
 
@@ -331,7 +331,7 @@ diesel::joinable!(reports -> reporters (reporterid));
 diesel::joinable!(reports -> victims (victimid));
 diesel::joinable!(ui_reports -> reports (reportid));
 diesel::joinable!(ui_reports -> updates (updateid));
-diesel::joinable!(updates -> admins (adminid));
+diesel::joinable!(updates -> authentication_user (adminid));
 
 diesel::allow_tables_to_appear_in_same_query!(
     accused,

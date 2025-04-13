@@ -1,36 +1,22 @@
 use diesel::prelude::*;
-use crate::schema::users;
-use serde::{Deserialize, Serialize};
+use crate::schema::authentication_user;
 
-#[derive(Queryable, Selectable, Identifiable)]
-#[diesel(table_name = users)]
-#[diesel(primary_key(userid))]
+#[derive(Queryable, Selectable, Identifiable, Debug)]
+#[diesel(table_name = authentication_user)]
+#[diesel(primary_key(id))]
 pub struct User {
-    pub userid: i32,
-    pub fullname: String,
-    pub email: String,
+    pub id: i64,
     pub password: String,
-    pub role: String,
-}
-
-#[derive(Insertable)]
-#[diesel(table_name = users)]
-pub struct NewUser {
-    pub fullname: String,
+    pub last_login: Option<chrono::DateTime<chrono::Utc>>,
+    pub is_superuser: bool,
+    pub first_name: String,
+    pub last_name: String,
+    pub is_staff: bool,
+    pub is_active: bool,
+    pub date_joined: chrono::DateTime<chrono::Utc>,
     pub email: String,
-    pub password: String,
-    pub role: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct JwtClaims {
-    pub token_type: String,
-    pub exp: usize,
-    pub iat: usize,
-    pub jti: String,
-    pub user_id: i32,
-    pub email: String,
-    pub full_name: String,
-    pub user_type: String, 
+    pub user_type: String,
     pub is_email_verified: bool,
+    pub full_name: String,
+    pub phone_number: String,
 }

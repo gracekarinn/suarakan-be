@@ -203,7 +203,7 @@ diesel::table! {
         description -> Nullable<Text>,
         #[max_length = 50]
         filelink -> Nullable<Varchar>,
-        adminid -> Nullable<Int4>,
+        adminid -> Nullable<Int8>,
     }
 }
 
@@ -321,7 +321,7 @@ diesel::joinable!(ham_reports -> reports (reportid));
 diesel::joinable!(ham_reports -> updates (updateid));
 diesel::joinable!(perempuan_reports -> reports (reportid));
 diesel::joinable!(perempuan_reports -> updates (updateid));
-diesel::joinable!(publications -> admins (adminid));
+diesel::joinable!(publications -> authentication_user (adminid));
 diesel::joinable!(reporters -> users (reporterid));
 diesel::joinable!(reports -> accused (accusedid));
 diesel::joinable!(reports -> incidents (incidentid));

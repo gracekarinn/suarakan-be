@@ -1,11 +1,11 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
 use crate::schema::publications;
-use crate::model::admin::Admin;
+use crate::model::user::User;
 use serde::Serialize;
 
 #[derive(Queryable, Selectable, Identifiable, Associations, AsChangeset)]
-#[diesel(belongs_to(Admin, foreign_key = adminid))]
+#[diesel(belongs_to(User, foreign_key = adminid))]
 #[diesel(table_name = publications)]
 #[diesel(primary_key(publicationid))]
 #[derive(serde::Serialize)]
@@ -16,7 +16,7 @@ pub struct Publication {
     pub updatedat: Option<NaiveDateTime>,
     pub description: Option<String>,
     pub filelink: Option<String>,
-    pub adminid: Option<i32>,
+    pub adminid: Option<i64>,
 }
 
 #[derive(Insertable)]
@@ -27,5 +27,5 @@ pub struct NewPublication {
     pub updatedat: Option<NaiveDateTime>,
     pub description: Option<String>,
     pub filelink: Option<String>,
-    pub adminid: Option<i32>,
+    pub adminid: Option<i64>,
 }

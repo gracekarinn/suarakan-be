@@ -187,6 +187,14 @@ pub async fn update_publication(
                 }
             };
 
+            if existing.adminid != Some(claims.user_id) {
+                return (
+                    StatusCode::FORBIDDEN,
+                    Json(json!({"error": "You are not authorized to update this publication"})),
+                )
+                    .into_response();
+            }
+            
             let updated_publication = Publication {
                 publicationid: existing.publicationid,
                 title: payload.title.unwrap_or(existing.title),

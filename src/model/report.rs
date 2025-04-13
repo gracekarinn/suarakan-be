@@ -26,7 +26,7 @@ pub struct Report {
     pub incidentid: Option<i32>,
     pub victimid: Option<i32>,
     pub accusedid: Option<i32>,
-    pub updateid: Option<i32>,
+    pub updateid: i32,
 }
 
 #[derive(Insertable)]
@@ -39,5 +39,5 @@ pub struct NewReport {
     pub incidentid: Option<i32>,
     pub victimid: Option<i32>,
     pub accusedid: Option<i32>,
-    pub updateid: Option<i32>,
+    pub updateid: i32,
 }

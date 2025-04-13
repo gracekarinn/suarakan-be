@@ -233,6 +233,7 @@ diesel::table! {
         incidentid -> Nullable<Int4>,
         victimid -> Nullable<Int4>,
         accusedid -> Nullable<Int4>,
+        updateid -> Int4,
     }
 }
 

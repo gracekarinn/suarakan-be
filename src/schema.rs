@@ -234,6 +234,7 @@ diesel::table! {
         victimid -> Nullable<Int4>,
         accusedid -> Nullable<Int4>,
         updateid -> Int4,
+        authority -> Varchar,
     }
 }
 

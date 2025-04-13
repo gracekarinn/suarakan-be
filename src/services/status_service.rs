@@ -12,7 +12,7 @@ impl StatusService {
         remarks_param: Option<String>,
         proof_param: Option<String>,
         status_param: String,
-        admin_id: i32,
+        admin_id: i64,
     ) -> Result<Update, diesel::result::Error> {
         use crate::schema::updates::dsl::*;
 
@@ -51,7 +51,7 @@ impl StatusService {
         remarks_param: Option<String>,
         proof_param: Option<String>,
         status_param: Option<String>,
-        admin_id: i32,
+        admin_id: i64,
     ) -> Result<Update, diesel::result::Error> {
         use crate::schema::updates::dsl::*;
 

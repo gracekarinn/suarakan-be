@@ -1,10 +1,10 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
 use crate::schema::updates;
-use crate::model::admin::Admin;
+use crate::model::user::User;
 
 #[derive(Queryable, Selectable, Identifiable, Associations)]
-#[diesel(belongs_to(Admin, foreign_key = adminid))]
+#[diesel(belongs_to(User, foreign_key = adminid))]
 #[diesel(table_name = updates)]
 #[diesel(primary_key(updateid))]
 pub struct Update {
@@ -15,7 +15,7 @@ pub struct Update {
     pub remarks: Option<String>,
     pub proof: Option<String>,
     pub status: Option<String>,
-    pub adminid: Option<i32>,
+    pub adminid: Option<i64>,
 }
 
 #[derive(Insertable)]
@@ -27,5 +27,5 @@ pub struct NewUpdate {
     pub remarks: Option<String>,
     pub proof: Option<String>,
     pub status: Option<String>,
-    pub adminid: Option<i32>,
+    pub adminid: Option<i64>,
 }

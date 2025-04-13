@@ -20,7 +20,7 @@ pub struct CreatePublicationRequest {
     pub title: String,
     pub description: Option<String>,
     pub filelink: Option<String>,
-    pub adminid: Option<i32>,
+    pub adminid: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -28,7 +28,7 @@ pub struct UpdatePublicationRequest {
     pub title: Option<String>,
     pub description: Option<String>,
     pub filelink: Option<String>,
-    pub adminid: Option<i32>,
+    pub adminid: Option<i64>,
 }
 
 #[axum::debug_handler]

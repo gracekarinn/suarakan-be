@@ -118,7 +118,7 @@ pub async fn create_status(
                 ).into_response();
             }
 
-            let admin_id = match claims.user_id.to_string().parse::<i32>() {
+            let admin_id = match claims.user_id.to_string().parse::<i64>() {
                 Ok(id) => id,
                 Err(e) => {
                     eprintln!("Invalid user_id format: {:?}", e);
@@ -239,7 +239,7 @@ pub async fn update_status(
                 }
             };
 
-            let admin_id = match claims.user_id.to_string().parse::<i32>() {
+            let admin_id = match claims.user_id.to_string().parse::<i64>() {
                 Ok(id) => id,
                 Err(e) => {
                     eprintln!("Invalid user_id format: {:?}", e);

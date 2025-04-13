@@ -196,12 +196,12 @@ diesel::table! {
 diesel::table! {
     publications (publicationid) {
         publicationid -> Int4,
-        #[max_length = 50]
+        #[max_length = 255]
         title -> Varchar,
         createdat -> Timestamp,
         updatedat -> Nullable<Timestamp>,
         description -> Nullable<Text>,
-        #[max_length = 50]
+        #[max_length = 255]
         filelink -> Nullable<Varchar>,
         adminid -> Nullable<Int8>,
     }

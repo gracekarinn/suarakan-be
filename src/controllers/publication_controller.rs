@@ -20,7 +20,6 @@ pub struct CreatePublicationRequest {
     pub title: String,
     pub description: Option<String>,
     pub filelink: Option<String>,
-    pub adminid: Option<i64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -28,7 +27,6 @@ pub struct UpdatePublicationRequest {
     pub title: Option<String>,
     pub description: Option<String>,
     pub filelink: Option<String>,
-    pub adminid: Option<i64>,
 }
 
 #[axum::debug_handler]
@@ -67,7 +65,7 @@ pub async fn create_publication(
                 updatedat: None,
                 description: payload.description,
                 filelink: payload.filelink,
-                adminid: payload.adminid,
+                adminid: Some(claims.user_id),
             };
 
             match PublicationService::create_publication(&mut conn, new_publication) {
@@ -196,7 +194,7 @@ pub async fn update_publication(
                 updatedat: Some(Local::now().naive_local()),
                 description: payload.description.or(existing.description),
                 filelink: payload.filelink.or(existing.filelink),
-                adminid: payload.adminid.or(existing.adminid),
+                adminid: Some(claims.user_id),
             };
 
             match PublicationService::update_publication(&mut conn, publication_id, updated_publication) {

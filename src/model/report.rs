@@ -27,6 +27,7 @@ pub struct Report {
     pub victimid: Option<i32>,
     pub accusedid: Option<i32>,
     pub updateid: i32,
+    pub authority: String,
 }
 
 #[derive(Insertable)]
@@ -40,4 +41,5 @@ pub struct NewReport {
     pub victimid: Option<i32>,
     pub accusedid: Option<i32>,
     pub updateid: i32,
+    pub authority: String,
 }

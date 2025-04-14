@@ -175,6 +175,7 @@ diesel::table! {
         description -> Nullable<Text>,
         victimneeds -> Nullable<Text>,
         pasteffort -> Nullable<Text>,
+        proof -> Nullable<Text>,
     }
 }
 
@@ -182,14 +183,6 @@ diesel::table! {
     perempuan_reports (reportid) {
         reportid -> Int4,
         updateid -> Nullable<Int4>,
-    }
-}
-
-diesel::table! {
-    proofs (proofid) {
-        proofid -> Int4,
-        #[max_length = 50]
-        link -> Varchar,
     }
 }
 
@@ -229,7 +222,6 @@ diesel::table! {
         reporterid -> Int4,
         createdat -> Timestamp,
         updatedat -> Nullable<Timestamp>,
-        proofid -> Nullable<Int4>,
         incidentid -> Nullable<Int4>,
         victimid -> Nullable<Int4>,
         accusedid -> Nullable<Int4>,
@@ -326,7 +318,6 @@ diesel::joinable!(publications -> authentication_user (adminid));
 diesel::joinable!(reporters -> users (reporterid));
 diesel::joinable!(reports -> accused (accusedid));
 diesel::joinable!(reports -> incidents (incidentid));
-diesel::joinable!(reports -> proofs (proofid));
 diesel::joinable!(reports -> reporters (reporterid));
 diesel::joinable!(reports -> victims (victimid));
 diesel::joinable!(ui_reports -> reports (reportid));
@@ -350,7 +341,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     ham_reports,
     incidents,
     perempuan_reports,
-    proofs,
     publications,
     reporters,
     reports,

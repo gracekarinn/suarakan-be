@@ -12,6 +12,7 @@ pub struct Incident {
     pub description: Option<String>,
     pub victimneeds: Option<String>,
     pub pasteffort: Option<String>,
+    pub proof: Option<String>,
 }
 
 #[derive(Insertable)]
@@ -22,4 +23,5 @@ pub struct NewIncident {
     pub description: Option<String>,
     pub victimneeds: Option<String>,
     pub pasteffort: Option<String>,
+    pub proof: Option<String>,
 }

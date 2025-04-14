@@ -4,8 +4,9 @@ use chrono::NaiveDate;
 use crate::schema::reports;
 use crate::model::update::Update;
 use crate::model::reporter::Reporter;
+use serde::{Serialize, Deserialize};
 
-#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[derive(Queryable, Selectable, Identifiable, Associations, AsChangeset, Serialize, Deserialize)]
 #[diesel(belongs_to(Update, foreign_key = updateid))]
 #[diesel(belongs_to(Reporter, foreign_key = reporterid))]
 #[diesel(table_name = reports)]
@@ -63,7 +64,7 @@ pub struct Report {
     pub authority: String,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Deserialize)]
 #[diesel(table_name = reports)]
 pub struct NewReport {
     pub reportid: i32,

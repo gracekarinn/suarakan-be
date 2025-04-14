@@ -2,8 +2,9 @@ use diesel::prelude::*;
 use chrono::NaiveDate;
 use crate::schema::reporters;
 use crate::model::user::User;
+use serde::{Serialize, Deserialize};
 
-#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[derive(Queryable, Selectable, Identifiable, Serialize, Deserialize)]
 #[diesel(belongs_to(User, foreign_key = reporterid))]
 #[diesel(table_name = reporters)]
 #[diesel(primary_key(reporterid))]

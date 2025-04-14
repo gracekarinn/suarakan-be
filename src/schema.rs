@@ -226,7 +226,6 @@ diesel::table! {
 diesel::table! {
     updates (updateid) {
         updateid -> Int4,
-        dataid -> Int4,
         createdat -> Timestamp,
         updatedat -> Nullable<Timestamp>,
         remarks -> Nullable<Text>,

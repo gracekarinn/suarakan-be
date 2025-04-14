@@ -2,15 +2,15 @@ use diesel::prelude::*;
 use chrono::NaiveDateTime;
 use crate::schema::updates;
 use crate::model::user::User;
+use serde::{Serialize, Deserialize};
 
-#[derive(Queryable, Selectable, Identifiable, Associations)]
+#[derive(Queryable, Selectable, Identifiable, Associations, AsChangeset, Serialize, Deserialize)]
 #[diesel(belongs_to(User, foreign_key = adminid))]
 #[diesel(table_name = updates)]
 #[diesel(primary_key(updateid))]
 pub struct Update {
     pub updateid: i32,
-    pub dataid: i32,
-    pub createdat: NaiveDateTime,
+    pub createdat: Option<NaiveDateTime>,
     pub updatedat: Option<NaiveDateTime>,
     pub remarks: Option<String>,
     pub proof: Option<String>,
@@ -18,10 +18,10 @@ pub struct Update {
     pub adminid: Option<i64>,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Deserialize)]
 #[diesel(table_name = updates)]
 pub struct NewUpdate {
-    pub dataid: i32,
+    pub updateid: i32,
     pub createdat: Option<NaiveDateTime>,
     pub updatedat: Option<NaiveDateTime>,
     pub remarks: Option<String>,

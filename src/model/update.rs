@@ -10,7 +10,7 @@ use serde::{Serialize, Deserialize};
 #[diesel(primary_key(updateid))]
 pub struct Update {
     pub updateid: i32,
-    pub createdat: Option<NaiveDateTime>,
+    pub createdat: NaiveDateTime,
     pub updatedat: Option<NaiveDateTime>,
     pub remarks: Option<String>,
     pub proof: Option<String>,
@@ -22,7 +22,7 @@ pub struct Update {
 #[diesel(table_name = updates)]
 pub struct NewUpdate {
     pub updateid: i32,
-    pub createdat: Option<NaiveDateTime>,
+    pub createdat: NaiveDateTime,
     pub updatedat: Option<NaiveDateTime>,
     pub remarks: Option<String>,
     pub proof: Option<String>,

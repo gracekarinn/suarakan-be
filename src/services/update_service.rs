@@ -1,4 +1,3 @@
-// src/services/update_service.rs
 use diesel::prelude::*;
 use diesel::PgConnection;
 use chrono::Local;
@@ -29,9 +28,12 @@ impl UpdateService {
             return Err(diesel::result::Error::RollbackTransaction);
         }
         
+        let previous_update = updates::table.find(update_id).first::<Update>(conn)?;
+        let previous_created_at = previous_update.createdat.clone();
+
         let update = Update {
             updateid: update_id,
-            createdat: None, // We don't want to change this
+            createdat: previous_created_at,
             updatedat: Some(Local::now().naive_local()),
             remarks,
             proof,

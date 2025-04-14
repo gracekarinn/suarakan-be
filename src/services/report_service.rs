@@ -19,7 +19,7 @@ impl ReportService {
             // Create a new update with default values
             let new_update = NewUpdate {
                 updateid: 0, // Will be auto-generated
-                createdat: Some(Local::now().naive_local()),
+                createdat: Local::now().naive_local(),
                 updatedat: None,
                 remarks: Some("".to_string()),
                 proof: Some("".to_string()),

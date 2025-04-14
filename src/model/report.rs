@@ -6,14 +6,13 @@ use crate::model::update::Update;
 use crate::model::reporter::Reporter;
 use serde::{Serialize, Deserialize};
 
-#[derive(Queryable, Selectable, Identifiable, Associations, AsChangeset, Serialize, Deserialize)]
+#[derive(Queryable, Selectable, Identifiable, Associations, AsChangeset, Serialize, Deserialize, Debug)]
 #[diesel(belongs_to(Update, foreign_key = updateid))]
 #[diesel(belongs_to(Reporter, foreign_key = reporterid))]
 #[diesel(table_name = reports)]
 #[diesel(primary_key(reportid))]
 pub struct Report {
     pub reportid: i32,
-    pub reporterid: i32,
     pub updateid: i32,
     pub createdat: Option<NaiveDateTime>,
     pub updatedat: Option<NaiveDateTime>,
@@ -62,6 +61,7 @@ pub struct Report {
 
     // AUTHORITY
     pub authority: String,
+    pub reporterid: i32,
 }
 
 #[derive(Insertable, Deserialize)]

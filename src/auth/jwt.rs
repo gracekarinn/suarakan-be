@@ -8,7 +8,7 @@ pub struct JwtClaims {
     pub exp: usize,
     pub iat: usize,
     pub jti: String,
-    pub user_id: i32,
+    pub user_id: i64,
     pub email: String,
     pub full_name: String,
     pub user_type: String,

@@ -11,10 +11,12 @@ use dotenv::dotenv;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 use database::connection::establish_connection_pool;
+use tracing_subscriber;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
+    tracing_subscriber::fmt::init();
 
     let pool = establish_connection_pool()?;
     println!("Connected to PostgreSQL");

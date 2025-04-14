@@ -6,7 +6,9 @@ use axum::{
 };
 use chrono::Local;
 use serde::{Deserialize, Serialize};
+use validator::{Validate, ValidationErrors};
 use serde_json::json;
+use regex::Regex;
 
 use crate::{
     database::connection::DbPool,
@@ -15,20 +17,25 @@ use crate::{
     services::publication_service::PublicationService,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct CreatePublicationRequest {
     pub title: String,
     pub description: Option<String>,
+    #[validate(url)]
     pub filelink: Option<String>,
-    pub adminid: Option<i64>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct UpdatePublicationRequest {
     pub title: Option<String>,
     pub description: Option<String>,
+    #[validate(url)]
     pub filelink: Option<String>,
-    pub adminid: Option<i64>,
+}
+
+fn sanitize_input(input: &str) -> String {
+    let re = Regex::new(r"[<>\'%;()&]").unwrap();
+    re.replace_all(input, "").to_string()
 }
 
 #[axum::debug_handler]
@@ -36,52 +43,64 @@ pub async fn create_publication(
     State(pool): State<DbPool>,
     headers: axum::http::HeaderMap,
     Json(payload): Json<CreatePublicationRequest>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, impl IntoResponse> {
     let mut builder = Request::builder();
     for (key, value) in headers.iter() {
         builder = builder.header(key, value);
     }
+
+    if let Err(validation_errors) = payload.validate() {
+        let error_response = json!({
+            "error": "Validation failed",
+            "details": validation_errors
+        });
+        return Ok::<_, (StatusCode, Json<serde_json::Value>)>((StatusCode::BAD_REQUEST, Json(error_response)).into_response());
+    }
+
+    let sanitized_title = sanitize_input(&payload.title);
+    let sanitized_description = payload.description.as_ref().map(|desc| sanitize_input(desc));
+    let sanitized_filelink = payload.filelink.as_ref().map(|link| sanitize_input(link));
+
     match extract_token_from_request(&builder.body(()).unwrap()) {
         Ok(claims) => {
             if claims.user_type != "ADMIN" {
-                return (
+                return Ok((
                     StatusCode::FORBIDDEN,
                     Json(json!({"error": "Admin access required"})),
-                ).into_response();
+                ).into_response());
             }
 
             let mut conn = match pool.get() {
                 Ok(conn) => conn,
                 Err(_) => {
-                    return (
+                    return Ok((
                         StatusCode::INTERNAL_SERVER_ERROR,
                         Json(json!({"error": "Database connection error"})),
-                    )
-                        .into_response()
+                    ).into_response());
                 }
             };
 
             let new_publication = NewPublication {
-                title: payload.title,
+                title: sanitized_title,
                 createdat: Local::now().naive_local(),
                 updatedat: None,
-                description: payload.description,
-                filelink: payload.filelink,
-                adminid: payload.adminid,
+                description: sanitized_description,
+                filelink: sanitized_filelink,
+                adminid: Some(claims.user_id),
             };
 
             match PublicationService::create_publication(&mut conn, new_publication) {
                 Ok(publication) => {
-                    (StatusCode::CREATED, Json(json!(publication))).into_response()
+                    Ok((StatusCode::CREATED, Json(json!(publication))).into_response())
                 }
-                Err(e) => (
+                Err(e) => Ok((
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(json!({"error": e.to_string()})),
                 )
-                    .into_response(),
+                    .into_response()),
             }
         }
-        Err(status) => (status, Json(json!({"error": "Authentication failed"}))).into_response(),
+        Err(status) => Ok((status, Json(json!({"error": "Authentication failed"}))).into_response()),
     }
 }
 
@@ -145,72 +164,92 @@ pub async fn update_publication(
     Path(publication_id): Path<i32>,
     headers: axum::http::HeaderMap,
     Json(payload): Json<UpdatePublicationRequest>,
-) -> impl IntoResponse {
+) -> Result<impl IntoResponse, (StatusCode, Json<serde_json::Value>)> {
     let mut builder = Request::builder();
     for (key, value) in headers.iter() {
         builder = builder.header(key, value);
     }
     
+    if let Err(validation_errors) = payload.validate() {
+        let error_response = json!({
+            "error": "Validation failed",
+            "details": validation_errors
+        });
+        return Ok((StatusCode::BAD_REQUEST, Json(error_response)).into_response());
+    }
+
+    let sanitized_title = payload.title.as_ref().map(|title| sanitize_input(title));
+    let sanitized_description = payload.description.as_ref().map(|desc| sanitize_input(desc));
+    let sanitized_filelink = payload.filelink.as_ref().map(|link| sanitize_input(link));
+
     match extract_token_from_request(&builder.body(()).unwrap()) {
         Ok(claims) => {
             if claims.user_type != "ADMIN" {
-                return (
+                return Ok((
                     StatusCode::FORBIDDEN,
                     Json(json!({"error": "Admin access required"})),
-                ).into_response();
+                ).into_response());
             }
 
             let mut conn = match pool.get() {
                 Ok(conn) => conn,
                 Err(_) => {
-                    return (
+                    return Ok((
                         StatusCode::INTERNAL_SERVER_ERROR,
                         Json(json!({"error": "Database connection error"})),
                     )
-                        .into_response()
+                        .into_response());
                 }
             };
 
             let existing = match PublicationService::get_publication_by_id(&mut conn, publication_id) {
                 Ok(publication) => publication,
                 Err(diesel::result::Error::NotFound) => {
-                    return (
+                    return Ok((
                         StatusCode::NOT_FOUND,
                         Json(json!({"error": "Publication not found"})),
                     )
-                        .into_response()
+                        .into_response());
                 }
                 Err(e) => {
-                    return (
+                    return Ok((
                         StatusCode::INTERNAL_SERVER_ERROR,
                         Json(json!({"error": e.to_string()})),
                     )
-                        .into_response()
+                        .into_response());
                 }
             };
 
+            if existing.adminid != Some(claims.user_id) {
+                return Ok((
+                    StatusCode::FORBIDDEN,
+                    Json(json!({"error": "You are not authorized to update this publication"})),
+                )
+                    .into_response());
+            }
+
             let updated_publication = Publication {
                 publicationid: existing.publicationid,
-                title: payload.title.unwrap_or(existing.title),
+                title: sanitized_title.unwrap_or_else(|| existing.title),
                 createdat: existing.createdat,
                 updatedat: Some(Local::now().naive_local()),
-                description: payload.description.or(existing.description),
-                filelink: payload.filelink.or(existing.filelink),
-                adminid: payload.adminid.or(existing.adminid),
+                description: sanitized_description.or(existing.description),
+                filelink: sanitized_filelink.or(existing.filelink),
+                adminid: Some(claims.user_id),
             };
 
             match PublicationService::update_publication(&mut conn, publication_id, updated_publication) {
                 Ok(publication) => {
-                    (StatusCode::OK, Json(json!(publication))).into_response()
+                    Ok((StatusCode::OK, Json(json!(publication))).into_response())
                 }
-                Err(e) => (
+                Err(e) => Ok((
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(json!({"error": e.to_string()})),
                 )
-                    .into_response(),
+                    .into_response()),
             }
         }
-        Err(status) => (status, Json(json!({"error": "Authentication failed"}))).into_response(),
+        Err(status) => Ok((status, Json(json!({"error": "Authentication failed"}))).into_response()),
     }
 }
 

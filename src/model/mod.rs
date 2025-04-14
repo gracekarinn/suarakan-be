@@ -1,9 +1,6 @@
 pub mod user;
 pub mod admin;
-pub mod reporter;
 pub mod report;
-pub mod incident;
-pub mod victim;
-pub mod accused;
+pub mod reporter;
 pub mod update;
 pub mod publication;

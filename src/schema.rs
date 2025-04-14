@@ -1,30 +1,6 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    accused (accusedid) {
-        accusedid -> Int4,
-        #[max_length = 50]
-        fullname -> Varchar,
-        #[max_length = 50]
-        email -> Nullable<Varchar>,
-        domicileaddress -> Nullable<Text>,
-        #[max_length = 50]
-        phonenum -> Nullable<Varchar>,
-        #[max_length = 50]
-        occupation -> Nullable<Varchar>,
-        #[max_length = 50]
-        sex -> Nullable<Varchar>,
-        dateofbirth -> Nullable<Date>,
-        #[max_length = 50]
-        placeofbirth -> Nullable<Varchar>,
-        #[max_length = 50]
-        educationlevel -> Nullable<Varchar>,
-        #[max_length = 50]
-        relationship -> Nullable<Varchar>,
-    }
-}
-
-diesel::table! {
     admins (adminid) {
         adminid -> Int4,
     }
@@ -167,19 +143,6 @@ diesel::table! {
 }
 
 diesel::table! {
-    incidents (incidentid) {
-        incidentid -> Int4,
-        #[max_length = 40]
-        location -> Varchar,
-        time -> Timestamp,
-        description -> Nullable<Text>,
-        victimneeds -> Nullable<Text>,
-        pasteffort -> Nullable<Text>,
-        proof -> Nullable<Text>,
-    }
-}
-
-diesel::table! {
     perempuan_reports (reportid) {
         reportid -> Int4,
         updateid -> Nullable<Int4>,
@@ -219,14 +182,37 @@ diesel::table! {
 diesel::table! {
     reports (reportid) {
         reportid -> Int4,
-        reporterid -> Int4,
-        createdat -> Timestamp,
-        updatedat -> Nullable<Timestamp>,
-        incidentid -> Nullable<Int4>,
-        victimid -> Nullable<Int4>,
-        accusedid -> Nullable<Int4>,
         updateid -> Int4,
-        authority -> Varchar,
+        createdat -> Nullable<Timestamp>,
+        updatedat -> Nullable<Timestamp>,
+        reporterfullname -> Nullable<Text>,
+        reporterphonenum -> Nullable<Text>,
+        reporteraddress -> Nullable<Text>,
+        reporterrelationship -> Nullable<Text>,
+        incidentlocation -> Text,
+        incidenttime -> Timestamp,
+        incidentdescription -> Nullable<Text>,
+        incidentvictimneeds -> Nullable<Text>,
+        incidentproof -> Nullable<Text>,
+        victimfullname -> Text,
+        victimnik -> Nullable<Text>,
+        victimemail -> Nullable<Text>,
+        victimaddress -> Nullable<Text>,
+        victimphonenum -> Nullable<Text>,
+        victimoccupation -> Nullable<Text>,
+        victimsex -> Nullable<Text>,
+        victimdateofbirth -> Nullable<Date>,
+        victimplaceofbirth -> Nullable<Text>,
+        victimeducationlevel -> Nullable<Text>,
+        victimmarriagestatus -> Nullable<Text>,
+        accusedfullname -> Text,
+        accusedaddress -> Nullable<Text>,
+        accusedphonenum -> Nullable<Text>,
+        accusedoccupation -> Nullable<Text>,
+        accusedsex -> Nullable<Text>,
+        accusedrelationship -> Nullable<Text>,
+        authority -> Text,
+        reporterid -> Int4,
     }
 }
 
@@ -266,39 +252,6 @@ diesel::table! {
     }
 }
 
-diesel::table! {
-    victims (victimid) {
-        victimid -> Int4,
-        #[max_length = 100]
-        fullname -> Varchar,
-        #[max_length = 20]
-        nik -> Nullable<Varchar>,
-        #[max_length = 50]
-        email -> Nullable<Varchar>,
-        domicileaddress -> Nullable<Text>,
-        #[max_length = 20]
-        phonenum -> Nullable<Varchar>,
-        #[max_length = 50]
-        occupation -> Nullable<Varchar>,
-        #[max_length = 2]
-        sex -> Nullable<Varchar>,
-        dateofbirth -> Nullable<Date>,
-        #[max_length = 50]
-        placeofbirth -> Nullable<Varchar>,
-        officialaddress -> Nullable<Text>,
-        #[max_length = 50]
-        educationlevel -> Nullable<Varchar>,
-        #[max_length = 50]
-        faxnum -> Nullable<Varchar>,
-        #[max_length = 50]
-        marriagestatus -> Nullable<Varchar>,
-        marriageage -> Nullable<Int4>,
-        isuploaded -> Nullable<Bool>,
-        #[max_length = 50]
-        disability -> Nullable<Varchar>,
-    }
-}
-
 diesel::joinable!(admins -> users (adminid));
 diesel::joinable!(auth_group_permissions -> auth_group (group_id));
 diesel::joinable!(auth_group_permissions -> auth_permission (permission_id));
@@ -310,22 +263,16 @@ diesel::joinable!(authentication_user_user_permissions -> authentication_user (u
 diesel::joinable!(authentication_userprofile -> authentication_user (user_id));
 diesel::joinable!(django_admin_log -> authentication_user (user_id));
 diesel::joinable!(django_admin_log -> django_content_type (content_type_id));
-diesel::joinable!(ham_reports -> reports (reportid));
 diesel::joinable!(ham_reports -> updates (updateid));
-diesel::joinable!(perempuan_reports -> reports (reportid));
 diesel::joinable!(perempuan_reports -> updates (updateid));
 diesel::joinable!(publications -> authentication_user (adminid));
 diesel::joinable!(reporters -> users (reporterid));
-diesel::joinable!(reports -> accused (accusedid));
-diesel::joinable!(reports -> incidents (incidentid));
 diesel::joinable!(reports -> reporters (reporterid));
-diesel::joinable!(reports -> victims (victimid));
-diesel::joinable!(ui_reports -> reports (reportid));
+diesel::joinable!(reports -> updates (updateid));
 diesel::joinable!(ui_reports -> updates (updateid));
 diesel::joinable!(updates -> authentication_user (adminid));
 
 diesel::allow_tables_to_appear_in_same_query!(
-    accused,
     admins,
     auth_group,
     auth_group_permissions,
@@ -339,7 +286,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     django_migrations,
     django_session,
     ham_reports,
-    incidents,
     perempuan_reports,
     publications,
     reporters,
@@ -347,5 +293,4 @@ diesel::allow_tables_to_appear_in_same_query!(
     ui_reports,
     updates,
     users,
-    victims,
 );

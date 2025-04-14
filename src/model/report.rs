@@ -1,41 +1,119 @@
 use diesel::prelude::*;
 use chrono::NaiveDateTime;
+use chrono::NaiveDate;
 use crate::schema::reports;
-use crate::model::reporter::Reporter;
-use crate::model::incident::Incident;
-use crate::model::victim::Victim;
-use crate::model::accused::Accused;
 use crate::model::update::Update;
+use crate::model::reporter::Reporter;
 
 #[derive(Queryable, Selectable, Identifiable, Associations)]
-#[diesel(belongs_to(Reporter, foreign_key = reporterid))]
-#[diesel(belongs_to(Incident, foreign_key = incidentid))]
-#[diesel(belongs_to(Victim, foreign_key = victimid))]
-#[diesel(belongs_to(Accused, foreign_key = accusedid))]
 #[diesel(belongs_to(Update, foreign_key = updateid))]
+#[diesel(belongs_to(Reporter, foreign_key = reporterid))]
 #[diesel(table_name = reports)]
 #[diesel(primary_key(reportid))]
 pub struct Report {
     pub reportid: i32,
     pub reporterid: i32,
-    pub createdat: NaiveDateTime,
-    pub updatedat: Option<NaiveDateTime>,
-    pub incidentid: Option<i32>,
-    pub victimid: Option<i32>,
-    pub accusedid: Option<i32>,
     pub updateid: i32,
+    pub createdat: Option<NaiveDateTime>,
+    pub updatedat: Option<NaiveDateTime>,
+
+    // REPORTER
+    pub reporterfullname: Option<String>,
+    pub reporterphonenum: Option<String>,
+    // pub reporteroccupation: Option<String>,
+    // pub reporterdateofbirth: Option<NaiveDate>,
+    pub reporteraddress: Option<String>,
+    pub reporterrelationship: Option<String>,
+
+    // INCIDENT
+    pub incidentlocation: String,
+    pub incidenttime: NaiveDateTime,
+    pub incidentdescription: Option<String>,
+    pub incidentvictimneeds: Option<String>,
+    // pub incidentpasteffort: Option<String>,
+    pub incidentproof: Option<String>,
+
+    // VICTIM
+    pub victimfullname: String,
+    pub victimnik: Option<String>,
+    pub victimemail: Option<String>,
+    pub victimaddress: Option<String>,
+    pub victimphonenum: Option<String>,
+    pub victimoccupation: Option<String>,
+    pub victimsex: Option<String>,
+    pub victimdateofbirth: Option<NaiveDate>,
+    pub victimplaceofbirth: Option<String>,
+    pub victimeducationlevel: Option<String>,
+    pub victimmarriagestatus: Option<String>,
+    // pub victimdisability: Option<String>,
+
+    // ACCUSED
+    pub accusedfullname: String,
+    // pub accusedemail: Option<String>,
+    pub accusedaddress: Option<String>,
+    pub accusedphonenum: Option<String>,
+    pub accusedoccupation: Option<String>,
+    pub accusedsex: Option<String>,
+    // pub accuseddateofbirth: Option<NaiveDate>,
+    // pub accusedplaceofbirth: Option<String>,
+    // pub accusededucationlevel: Option<String>,
+    pub accusedrelationship: Option<String>,
+
+    // AUTHORITY
     pub authority: String,
 }
 
 #[derive(Insertable)]
 #[diesel(table_name = reports)]
 pub struct NewReport {
+    pub reportid: i32,
     pub reporterid: i32,
+    pub updateid: i32,
     pub createdat: Option<NaiveDateTime>,
     pub updatedat: Option<NaiveDateTime>,
-    pub incidentid: Option<i32>,
-    pub victimid: Option<i32>,
-    pub accusedid: Option<i32>,
-    pub updateid: i32,
+
+    // REPORTER
+    pub reporterfullname: Option<String>,
+    pub reporterphonenum: Option<String>,
+    // pub reporteroccupation: Option<String>,
+    // pub reporterdateofbirth: Option<NaiveDate>,
+    pub reporteraddress: Option<String>,
+    pub reporterrelationship: Option<String>,
+
+    // INCIDENT
+    pub incidentlocation: String,
+    pub incidenttime: NaiveDateTime,
+    pub incidentdescription: Option<String>,
+    pub incidentvictimneeds: Option<String>,
+    // pub incidentpasteffort: Option<String>,
+    pub incidentproof: Option<String>,
+
+    // VICTIM
+    pub victimfullname: String,
+    pub victimnik: Option<String>,
+    pub victimemail: Option<String>,
+    pub victimaddress: Option<String>,
+    pub victimphonenum: Option<String>,
+    pub victimoccupation: Option<String>,
+    pub victimsex: Option<String>,
+    pub victimdateofbirth: Option<NaiveDate>,
+    pub victimplaceofbirth: Option<String>,
+    pub victimeducationlevel: Option<String>,
+    pub victimmarriagestatus: Option<String>,
+    // pub victimdisability: Option<String>,
+
+    // ACCUSED
+    pub accusedfullname: String,
+    // pub accusedemail: Option<String>,
+    pub accusedaddress: Option<String>,
+    pub accusedphonenum: Option<String>,
+    pub accusedoccupation: Option<String>,
+    pub accusedsex: Option<String>,
+    // pub accuseddateofbirth: Option<NaiveDate>,
+    // pub accusedplaceofbirth: Option<String>,
+    // pub accusededucationlevel: Option<String>,
+    pub accusedrelationship: Option<String>,
+
+    // AUTHORITY
     pub authority: String,
 }

@@ -182,7 +182,6 @@ diesel::table! {
 diesel::table! {
     reports (reportid) {
         reportid -> Int4,
-        updateid -> Int4,
         createdat -> Nullable<Timestamp>,
         updatedat -> Nullable<Timestamp>,
         reporterfullname -> Nullable<Text>,
@@ -233,7 +232,7 @@ diesel::table! {
         proof -> Nullable<Varchar>,
         #[max_length = 50]
         status -> Nullable<Varchar>,
-        adminid -> Nullable<Int8>,
+        reportid -> Int4,
     }
 }
 
@@ -267,9 +266,8 @@ diesel::joinable!(perempuan_reports -> updates (updateid));
 diesel::joinable!(publications -> authentication_user (adminid));
 diesel::joinable!(reporters -> users (reporterid));
 diesel::joinable!(reports -> authentication_user (reporterid));
-diesel::joinable!(reports -> updates (updateid));
 diesel::joinable!(ui_reports -> updates (updateid));
-diesel::joinable!(updates -> authentication_user (adminid));
+diesel::joinable!(updates -> reports (reportid));
 
 diesel::allow_tables_to_appear_in_same_query!(
     admins,

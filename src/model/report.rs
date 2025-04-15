@@ -2,18 +2,15 @@ use diesel::prelude::*;
 use chrono::NaiveDateTime;
 use chrono::NaiveDate;
 use crate::schema::reports;
-use crate::model::update::Update;
 use crate::model::user::User;
 use serde::{Serialize, Deserialize};
 
 #[derive(Queryable, Selectable, Identifiable, Associations, AsChangeset, Serialize, Deserialize, Debug)]
-#[diesel(belongs_to(Update, foreign_key = updateid))]
 #[diesel(belongs_to(User, foreign_key = reporterid))]
 #[diesel(table_name = reports)]
 #[diesel(primary_key(reportid))]
 pub struct Report {
     pub reportid: i32,
-    pub updateid: i32,
     pub createdat: Option<NaiveDateTime>,
     pub updatedat: Option<NaiveDateTime>,
 
@@ -59,7 +56,6 @@ pub struct Report {
 #[derive(Insertable, Deserialize)]
 #[diesel(table_name = reports)]
 pub struct NewReport {
-    pub updateid: i32,
     pub createdat: Option<NaiveDateTime>,
     pub updatedat: Option<NaiveDateTime>,
 

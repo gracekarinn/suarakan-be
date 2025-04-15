@@ -1,11 +1,10 @@
-// src/controllers/update_controller.rs
 use axum::{
     extract::{Path, State},
     http::{Request, StatusCode},
     response::IntoResponse,
     Json,
 };
-use serde::{Deserialize, Serialize};
+use chrono::Local;
 use serde_json::json;
 
 use crate::{
@@ -15,19 +14,51 @@ use crate::{
     services::update_service::UpdateService,
 };
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UpdateStatusRequest {
-    pub status: String,
-    pub remarks: Option<String>,
-    pub proof: Option<String>,
+pub async fn get_update(
+    State(pool): State<DbPool>,
+    Path(update_id): Path<i32>,
+    req: Request<axum::body::Body>,
+) -> impl IntoResponse {
+    match extract_token_from_request(&req) {
+        Ok(_) => {
+            let mut conn = match pool.get() {
+                Ok(conn) => conn,
+                Err(_) => {
+                    return (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(json!({"error": "Database connection error"})),
+                    ).into_response()
+                }
+            };
+
+            match UpdateService::get_update_by_id(&mut conn, update_id) {
+                Ok(update) => (StatusCode::OK, Json(json!(update))).into_response(),
+                Err(diesel::result::Error::NotFound) => (
+                    StatusCode::NOT_FOUND,
+                    Json(json!({"error": "Update not found"})),
+                ).into_response(),
+                Err(e) => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({"error": e.to_string()})),
+                ).into_response(),
+            }
+        }
+        Err(status) => (status, Json(json!({"error": "Authentication failed"}))).into_response(),
+    }
 }
 
-#[axum::debug_handler]
-pub async fn update_status(
+#[derive(serde::Deserialize)]
+pub struct UpdateRequest {
+    pub remarks: Option<String>,
+    pub proof: Option<String>,
+    pub status: Option<String>,
+}
+
+pub async fn update_update(
     State(pool): State<DbPool>,
     Path(update_id): Path<i32>,
     headers: axum::http::HeaderMap,
-    Json(payload): Json<UpdateStatusRequest>,
+    Json(payload): Json<UpdateRequest>,
 ) -> impl IntoResponse {
     let mut builder = Request::builder();
     for (key, value) in headers.iter() {
@@ -43,8 +74,6 @@ pub async fn update_status(
                 ).into_response();
             }
 
-            let admin_id = claims.user_id;
-
             let mut conn = match pool.get() {
                 Ok(conn) => conn,
                 Err(_) => {
@@ -55,61 +84,45 @@ pub async fn update_status(
                 }
             };
 
-            match UpdateService::update_status(
-                &mut conn,
-                update_id,
-                admin_id,
-                payload.status,
-                payload.remarks,
-                payload.proof,
-            ) {
-                Ok(update) => {
-                    (StatusCode::OK, Json(json!(update))).into_response()
+            let existing = match UpdateService::get_update_by_id(&mut conn, update_id) {
+                Ok(update) => update,
+                Err(diesel::result::Error::NotFound) => {
+                    return (
+                        StatusCode::NOT_FOUND,
+                        Json(json!({"error": "Update not found"})),
+                    ).into_response();
                 }
-                Err(diesel::result::Error::NotFound) => (
-                    StatusCode::NOT_FOUND,
-                    Json(json!({"error": "Update not found"})),
-                ).into_response(),
-                Err(diesel::result::Error::RollbackTransaction) => (
-                    StatusCode::BAD_REQUEST,
-                    Json(json!({"error": "Invalid status value. Must be one of: Received, Processing, Completed, Rejected"})),
-                ).into_response(),
-                Err(e) => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    Json(json!({"error": e.to_string()})),
-                ).into_response(),
+                Err(e) => {
+                    return (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        Json(json!({"error": e.to_string()})),
+                    ).into_response();
+                }
+            };
+
+            if let Some(status) = &payload.status {
+                if !["Received", "Processing", "Completed", "Rejected"].contains(&status.as_str()) {
+                    return (
+                        StatusCode::BAD_REQUEST,
+                        Json(json!({"error": "Invalid status. Must be one of: Received, Processing, Completed, Rejected"})),
+                    ).into_response();
+                }
             }
-        }
-        Err(status) => (status, Json(json!({"error": "Authentication failed"}))).into_response(),
-    }
-}
 
-#[axum::debug_handler]
-pub async fn get_update(
-    State(pool): State<DbPool>,
-    Path(update_id): Path<i32>,
-    req: Request<axum::body::Body>,
-) -> impl IntoResponse {
-    match extract_token_from_request(&req) {
-        Ok(claims) => {
-            let mut conn = match pool.get() {
-                Ok(conn) => conn,
-                Err(_) => {
-                    return (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        Json(json!({"error": "Database connection error"})),
-                    ).into_response();
-                }
+            let updated_update = Update {
+                updateid: existing.updateid,
+                createdat: existing.createdat,
+                updatedat: Some(Local::now().naive_local()),
+                remarks: payload.remarks.or(existing.remarks),
+                proof: payload.proof.or(existing.proof),
+                status: payload.status.or(existing.status),
+                reportid: existing.reportid,
             };
 
-            match UpdateService::get_update_by_id(&mut conn, update_id) {
+            match UpdateService::update_update(&mut conn, update_id, updated_update) {
                 Ok(update) => {
                     (StatusCode::OK, Json(json!(update))).into_response()
                 }
-                Err(diesel::result::Error::NotFound) => (
-                    StatusCode::NOT_FOUND,
-                    Json(json!({"error": "Update not found"})),
-                ).into_response(),
                 Err(e) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(json!({"error": e.to_string()})),

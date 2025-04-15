@@ -3,6 +3,7 @@ pub mod protected;
 pub mod admin;
 pub mod publication;
 pub mod report;
+pub mod update;
 
 use axum::Router;
 use crate::database::DbPool;
@@ -22,6 +23,7 @@ pub fn create_routes(pool: DbPool) -> Router {
         .merge(protected::routes())
         .merge(admin::routes())
         .merge(publication::routes(pool.clone()))
-        // .merge(report::routes(pool))
+        .merge(report::routes(pool.clone()))
+        .merge(update::routes(pool.clone()))
         .layer(cors)
 }

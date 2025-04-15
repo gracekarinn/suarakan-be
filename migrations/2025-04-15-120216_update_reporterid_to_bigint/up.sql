@@ -1,0 +1,4 @@
+ALTER TABLE reports
+    ALTER COLUMN reporterid TYPE BIGINT;
+ALTER TABLE reports
+    ALTER COLUMN reporterid DROP NOT NULL;

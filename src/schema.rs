@@ -212,7 +212,7 @@ diesel::table! {
         accusedsex -> Nullable<Text>,
         accusedrelationship -> Nullable<Text>,
         authority -> Text,
-        reporterid -> Int4,
+        reporterid -> Nullable<Int8>,
     }
 }
 
@@ -266,7 +266,7 @@ diesel::joinable!(ham_reports -> updates (updateid));
 diesel::joinable!(perempuan_reports -> updates (updateid));
 diesel::joinable!(publications -> authentication_user (adminid));
 diesel::joinable!(reporters -> users (reporterid));
-diesel::joinable!(reports -> reporters (reporterid));
+diesel::joinable!(reports -> authentication_user (reporterid));
 diesel::joinable!(reports -> updates (updateid));
 diesel::joinable!(ui_reports -> updates (updateid));
 diesel::joinable!(updates -> authentication_user (adminid));

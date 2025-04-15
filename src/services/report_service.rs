@@ -12,7 +12,7 @@ impl ReportService {
     pub fn create_report(
         conn: &mut PgConnection, 
         mut new_report: NewReport,
-        reporter_id: i32
+        reporter_id: Option<i64>
     ) -> Result<Report, diesel::result::Error> {
         // Start a transaction
         conn.transaction(|conn| {
@@ -52,7 +52,7 @@ impl ReportService {
 
     pub fn get_reports_for_reporter(
         conn: &mut PgConnection,
-        reporter_id: i32
+        reporter_id: i64
     ) -> Result<Vec<Report>, diesel::result::Error> {
         reports::table
             .filter(reports::reporterid.eq(reporter_id))
@@ -70,7 +70,7 @@ impl ReportService {
     pub fn update_report(
         conn: &mut PgConnection,
         report_id: i32,
-        reporter_id: i32,
+        reporter_id: Option<i64>,
         updated_report: Report
     ) -> Result<Report, diesel::result::Error> {
         // Check if report belongs to reporter and is in "Received" status
@@ -100,7 +100,7 @@ impl ReportService {
     pub fn delete_report(
         conn: &mut PgConnection,
         report_id: i32,
-        reporter_id: i32
+        reporter_id: Option<i64>
     ) -> Result<usize, diesel::result::Error> {
         // Check if report belongs to reporter and is in "Received" or "Rejected" status
         let report = reports::table

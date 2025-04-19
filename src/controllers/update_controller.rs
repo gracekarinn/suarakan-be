@@ -6,6 +6,7 @@ use axum::{
 };
 use chrono::Local;
 use serde_json::json;
+use regex::Regex;
 
 use crate::{
     database::connection::DbPool,
@@ -13,6 +14,36 @@ use crate::{
     model::update::Update,
     services::update_service::UpdateService,
 };
+
+fn sanitize_string(input: Option<String>) -> Option<String> {
+    input.map(|s| html_escape::encode_text(&s).to_string())
+}
+
+fn is_valid_url(url: &str) -> bool {
+    let url_regex = Regex::new(r"^(https?://)?([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(/[^\s]*)?$").unwrap();
+    url_regex.is_match(url)
+}
+
+fn is_valid_status(status: &str) -> bool {
+    matches!(status, "Received" | "Processing" | "Completed" | "Rejected")
+}
+
+fn validate_update_request(update: &UpdateRequest) -> Result<(), (StatusCode, &'static str)> {
+    // Validate proof URL if provided
+    if let Some(proof) = &update.proof {
+        if !proof.is_empty() && !is_valid_url(proof) {
+            return Err((StatusCode::BAD_REQUEST, "Haru berupa link URL yang valid!"));
+        }
+    }
+    
+    if let Some(status) = &update.status {
+        if !is_valid_status(status) {
+            return Err((StatusCode::BAD_REQUEST, "Status harus berupa salah satu dari 'Received', 'Processing', 'Completed', dan 'Rejected'"));
+        }
+    }
+    
+    Ok(())
+}
 
 pub async fn get_update(
     State(pool): State<DbPool>,
@@ -100,22 +131,27 @@ pub async fn update_update(
                 }
             };
 
-            if let Some(status) = &payload.status {
-                if !["Received", "Processing", "Completed", "Rejected"].contains(&status.as_str()) {
+            match validate_update_request(&payload) {
+                Ok(_) => {},
+                Err((status, message)) => {
                     return (
-                        StatusCode::BAD_REQUEST,
-                        Json(json!({"error": "Invalid status. Must be one of: Received, Processing, Completed, Rejected"})),
+                        status,
+                        Json(json!({"error": message})),
                     ).into_response();
                 }
             }
+
+            let sanitized_remarks = sanitize_string(payload.remarks);
+            let sanitized_proof = sanitize_string(payload.proof);
+            let sanitized_status = sanitize_string(payload.status);
 
             let updated_update = Update {
                 updateid: existing.updateid,
                 createdat: existing.createdat,
                 updatedat: Some(Local::now().naive_local()),
-                remarks: payload.remarks.or(existing.remarks),
-                proof: payload.proof.or(existing.proof),
-                status: payload.status.or(existing.status),
+                remarks: sanitized_remarks.or(existing.remarks),
+                proof: sanitized_proof.or(existing.proof),
+                status: sanitized_status.or(existing.status),
                 reportid: existing.reportid,
             };
 

@@ -1,8 +1,7 @@
 #[cfg(test)]
 mod tests {
     use axum::http::{header, Method, StatusCode};
-    use crate::common::{setup_test_db, utils};
-    
+    use crate::common::{setup_test_db, utils};   
     
     async fn mock_response(uri: &str, method: Method, headers: &[(header::HeaderName, &str)]) -> StatusCode {
         
@@ -15,26 +14,26 @@ mod tests {
             .map(|(_, value)| *value);
             
         
-        match (uri, method.as_str(), auth_header) {
-            
+        match (uri, method.as_str(), auth_header) {        
             ("/admin", "GET", None) => StatusCode::UNAUTHORIZED,
             ("/admin", "GET", Some(h)) if h.contains(&reporter_token) => StatusCode::FORBIDDEN,
             ("/admin", "GET", Some(h)) if h.contains(&admin_token) => StatusCode::OK,
-            
-            
+                  
             ("/api/v1/publications", "POST", Some(h)) if h.contains(&reporter_token) => StatusCode::FORBIDDEN,
             ("/api/v1/publications", "POST", Some(h)) if h.contains(&admin_token) => StatusCode::CREATED,
-            
+               
+            ("/api/v1/reports", "GET", None) => StatusCode::UNAUTHORIZED,
+            ("/api/v1/reports/1", "GET", Some(h)) if h.contains(&reporter_token) => StatusCode::OK,
+            ("/api/v1/reports/2", "GET", Some(h)) if h.contains(&reporter_token) => StatusCode::FORBIDDEN,
+            ("/api/v1/reports/2", "GET", Some(h)) if h.contains(&admin_token) => StatusCode::OK, 
             
             _ => StatusCode::NOT_FOUND,
         }
     }
 
     #[tokio::test]
-    async fn test_unauthorized_access_to_admin_endpoint() {
-        
+    async fn test_unauthorized_access_to_admin_endpoint() { 
         let _pool = setup_test_db().await;
-        
         
         let status = mock_response(
             "/admin", 
@@ -43,7 +42,6 @@ mod tests {
         ).await;
         assert_eq!(status, StatusCode::UNAUTHORIZED);
         
-        
         let reporter_token = utils::get_reporter_token();
         let status = mock_response(
             "/admin", 
@@ -51,7 +49,6 @@ mod tests {
             &[(header::AUTHORIZATION, &format!("Bearer {}", reporter_token))]
         ).await;
         assert_eq!(status, StatusCode::FORBIDDEN);
-        
         
         let admin_token = utils::get_admin_token();
         let status = mock_response(
@@ -63,10 +60,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_publication_authorization() {
-        
+    async fn test_publication_authorization() {   
         let _pool = setup_test_db().await;
-        
         
         let reporter_token = utils::get_reporter_token();
         let status = mock_response(
@@ -78,5 +73,41 @@ mod tests {
             ]
         ).await;
         assert_eq!(status, StatusCode::FORBIDDEN);
+    }
+
+    #[tokio::test]
+    async fn test_report_authorization() {
+        let _pool = setup_test_db().await;
+        
+        let status = mock_response(
+            "/api/v1/reports", 
+            Method::GET,
+            &[]
+        ).await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
+        
+        let reporter_token = utils::get_reporter_token();
+        
+        let status = mock_response(
+            "/api/v1/reports/1", 
+            Method::GET,
+            &[(header::AUTHORIZATION, &format!("Bearer {}", reporter_token))]
+        ).await;
+        assert_eq!(status, StatusCode::OK);
+        
+        let status = mock_response(
+            "/api/v1/reports/2", 
+            Method::GET,
+            &[(header::AUTHORIZATION, &format!("Bearer {}", reporter_token))]
+        ).await;
+        assert_eq!(status, StatusCode::FORBIDDEN);
+        
+        let admin_token = utils::get_admin_token();
+        let status = mock_response(
+            "/api/v1/reports/2", 
+            Method::GET,
+            &[(header::AUTHORIZATION, &format!("Bearer {}", admin_token))]
+        ).await;
+        assert_eq!(status, StatusCode::OK);
     }
 }

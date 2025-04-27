@@ -53,7 +53,7 @@ pub struct Report {
     pub reporterid: Option<i64>,
 }
 
-#[derive(Insertable, Deserialize)]
+#[derive(Insertable, Serialize, Deserialize)]
 #[diesel(table_name = reports)]
 pub struct NewReport {
     pub createdat: Option<NaiveDateTime>,

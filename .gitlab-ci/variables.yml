@@ -1,9 +1,9 @@
 variables:
   # App Specifications
-  MIN_CPU: 125m
-  MIN_MEMORY: 256Mi
-  MAX_CPU: 500m
-  MAX_MEMORY: 512Mi
+  MIN_CPU: 50m       
+  MIN_MEMORY: 128Mi  
+  MAX_CPU: 200m     
+  MAX_MEMORY: 200Mi  
   PORT: 80
 
   # Image and Deployment Variables, It's better to not change these variables below

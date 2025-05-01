@@ -11,7 +11,7 @@ COPY . .
 
 RUN cargo build --release
 
-FROM debian:bullseye-slim
+FROM ubuntu:22.04
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -27,5 +27,8 @@ COPY --from=builder /usr/src/app/diesel.toml /usr/local/bin/
 WORKDIR /usr/local/bin
 
 EXPOSE 80
+
+
+ENV RUST_ENV=production
 
 CMD ["suarakan-be"]

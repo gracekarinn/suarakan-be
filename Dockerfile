@@ -26,6 +26,6 @@ COPY --from=builder /usr/src/app/diesel.toml /usr/local/bin/
 
 WORKDIR /usr/local/bin
 
-EXPOSE 8080
+EXPOSE 80
 
 CMD ["suarakan-be"]

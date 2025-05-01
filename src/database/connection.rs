@@ -24,7 +24,7 @@ fn get_database_url() -> String {
     
     if is_production {
         let db_name = env::var("DB_NAME").expect("DB_NAME must be set in production");
-        let db_user = env::var("DB_USER").expect("DB_USER must be set in production");
+        let db_user = env::var("DB_USERNAME").expect("DB_USER must be set in production");
         let db_password = env::var("DB_PASSWORD").expect("DB_PASSWORD must be set in production");
         let db_host = env::var("DB_HOST").expect("DB_HOST must be set in production");
         let db_port = env::var("DB_PORT").unwrap_or_else(|_| "5432".to_string());

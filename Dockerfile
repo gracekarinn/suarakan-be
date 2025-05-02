@@ -25,6 +25,7 @@ COPY --from=builder /usr/src/app/diesel.toml /usr/local/bin/
 WORKDIR /usr/local/bin
 
 ENV RUST_ENV=production
+ENV FE_URL="*"
 
 EXPOSE 80
 

@@ -1,4 +1,4 @@
-FROM rust:1.82-bookworm AS builder
+FROM rust:1.82 AS builder
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libpq-dev pkg-config && \
@@ -10,7 +10,7 @@ COPY . .
 
 RUN cargo build --release
 
-FROM debian:bookworm-slim
+FROM ubuntu:22.04
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libpq5 ca-certificates && \
@@ -25,6 +25,7 @@ COPY --from=builder /usr/src/app/diesel.toml /usr/local/bin/
 WORKDIR /usr/local/bin
 
 ENV RUST_ENV=production
+
 ENV FE_URL="*"
 
 EXPOSE 80

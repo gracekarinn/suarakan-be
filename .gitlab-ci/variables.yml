@@ -18,5 +18,5 @@ variables:
   PODS_TEST: tests
   PODS_TESTNUM: 12312312
   PODS_TESTEQ: 123123=12312312
-  PODS_FE_URL: "http://localhost:3000"
+  PODS_FE_URL: "*"
 

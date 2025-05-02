@@ -26,8 +26,6 @@ WORKDIR /usr/local/bin
 
 ENV RUST_ENV=production
 
-ENV FE_URL="*"
-
 EXPOSE 80
 
 CMD ["suarakan-be"]

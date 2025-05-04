@@ -18,11 +18,11 @@ pub fn generate_test_token(user_id: i64, user_type: &str, full_name: &str) -> St
         exp: expiration as usize,
         email: "test@example.com".to_string(),
         iat: Utc::now().timestamp() as usize,
-        is_email_verified: true,
+        is_email_verified: false,
         jti: "unique_token_id".to_string()
     };
 
-    let secret = env::var("JWT_SECRET").unwrap_or_else(|_| "test_secret".to_string());
+    let secret = env::var("PODS_JWT_SECRET").unwrap_or_else(|_| "test_secret".to_string());
     encode(
         &Header::default(),
         &claims,

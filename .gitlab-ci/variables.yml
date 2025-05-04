@@ -19,4 +19,5 @@ variables:
   PODS_TESTNUM: 12312312
   PODS_TESTEQ: 123123=12312312
   PODS_FE_URL: "https://kelompok-3-suarakan-fe.pkpl.cs.ui.ac.id"
+  PODS_JWT_SECRET: $PODS_JWT_SECRET
 

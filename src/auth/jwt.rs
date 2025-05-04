@@ -16,7 +16,7 @@ pub struct JwtClaims {
 }
 
 pub fn verify_token(token: &str) -> Result<JwtClaims, jsonwebtoken::errors::Error> {
-    let jwt_secret = match env::var("JWT_SECRET") {
+    let jwt_secret = match env::var("PODS_JWT_SECRET") {
         Ok(secret) => {
             println!("Using JWT secret: {}", secret);
             secret
